@@ -1,14 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { CN_MASKS } from "./cn";
-import { TW_MASKS } from "./tw";
 import { EN_MASKS } from "./en";
+import { convertAgencyAgents } from "../../scripts/convert-agency-agents";
 
 import { type BuiltinMask } from "./typing";
 
 const BUILTIN_MASKS: Record<string, BuiltinMask[]> = {
   cn: CN_MASKS,
-  tw: TW_MASKS,
   en: EN_MASKS,
 };
 
@@ -23,3 +22,10 @@ fs.writeFile(
     }
   },
 );
+
+// Also generate agency-agents.json from the submodule
+try {
+  convertAgencyAgents();
+} catch (error) {
+  console.error("[Build] failed to build agency agents", error);
+}

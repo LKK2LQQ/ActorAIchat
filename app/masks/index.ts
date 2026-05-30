@@ -27,12 +27,37 @@ if (typeof window != "undefined") {
     .then((res) => res.json())
     .catch((error) => {
       console.error("[Fetch] failed to fetch masks", error);
-      return { cn: [], tw: [], en: [] };
+      return { cn: [], en: [] };
     })
     .then((masks) => {
-      const { cn = [], tw = [], en = [] } = masks;
-      return [...cn, ...tw, ...en].map((m) => {
+      const { cn = [], en = [] } = masks;
+      return [...cn, ...en].map((m) => {
         BUILTIN_MASKS.push(BUILTIN_MASK_STORE.add(m));
       });
     });
+
+  // Load agency agents (both EN and ZH versions)
+  Promise.all([
+    fetch("/agency-agents.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .catch(() => []),
+    fetch("/agency-agents-zh.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .catch(() => []),
+  ]).then(([enAgents, zhAgents]) => {
+    // Add EN agents
+    (Array.isArray(enAgents) ? enAgents : []).forEach((a: any) => {
+      BUILTIN_MASKS.push(
+        BUILTIN_MASK_STORE.add({ ...a, lang: "en" } as BuiltinMask),
+      );
+    });
+    // Add ZH agents
+    (Array.isArray(zhAgents) ? zhAgents : []).forEach((a: any) => {
+      BUILTIN_MASKS.push(
+        BUILTIN_MASK_STORE.add({ ...a, lang: "zh" } as BuiltinMask),
+      );
+    });
+    // Notify components that agency agents are ready
+    window.dispatchEvent(new CustomEvent("agency-agents-loaded"));
+  });
 }
