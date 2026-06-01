@@ -48,6 +48,8 @@ export async function handle(
     method: req.method,
     body: req.body,
     redirect: "manual" as RequestRedirect,
+    // @ts-ignore — duplex required by Node.js fetch for POST with body
+    duplex: "half",
     signal: controller.signal,
   };
 
