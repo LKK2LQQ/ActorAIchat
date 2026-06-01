@@ -219,26 +219,39 @@ export const AI302 = {
 export const Anthropic = {
   ExampleEndpoint: "https://api.anthropic.com",
   ChatPath: "v1/messages",
+  Vision: "2023-06-01",
 };
 
 export const Baidu = {
-  ExampleEndpoint: "https://aip.baidubce.com",
-  ChatPath: "rpc/2.0/ai_custom/v1/wenxinworkshop/chat/{model}",
+  ExampleEndpoint: BAIDU_BASE_URL,
+  ChatPath: (modelName: string) => {
+    let endpoint = modelName;
+    if (modelName === "ernie-4.0-8k") endpoint = "completions_pro";
+    if (modelName === "ernie-4.0-8k-preview-0518")
+      endpoint = "completions_adv_pro";
+    if (modelName === "ernie-3.5-8k") endpoint = "completions";
+    if (modelName === "ernie-speed-8k") endpoint = "ernie_speed";
+    return `rpc/2.0/ai_custom/v1/wenxinworkshop/chat/${endpoint}`;
+  },
 };
 
 export const ByteDance = {
-  ExampleEndpoint: "https://ark.cn-beijing.volces.com/api/v3",
-  ChatPath: "chat/completions",
+  ExampleEndpoint: "https://ark.cn-beijing.volces.com/api/",
+  ChatPath: "api/v3/chat/completions",
 };
 
 export const Alibaba = {
-  ExampleEndpoint: "https://dashscope.aliyuncs.com/api",
-  ChatPath: "v1/services/aigc/text-generation/generation",
+  ExampleEndpoint: ALIBABA_BASE_URL,
+  ChatPath: (modelName: string) => {
+    if (modelName.includes("vl") || modelName.includes("omni")) {
+      return "v1/services/aigc/multimodal-generation/generation";
+    }
+    return "v1/services/aigc/text-generation/generation";
+  },
 };
 
 export const Tencent = {
-  ExampleEndpoint: "https://hunyuan.tencentcloudapi.com",
-  ChatPath: "",
+  ExampleEndpoint: TENCENT_BASE_URL,
 };
 
 export const Iflytek = {
@@ -247,13 +260,16 @@ export const Iflytek = {
 };
 
 export const ChatGLM = {
-  ExampleEndpoint: "https://open.bigmodel.cn/api/paas/v4",
-  ChatPath: "chat/completions",
+  ExampleEndpoint: CHATGLM_BASE_URL,
+  ChatPath: "api/paas/v4/chat/completions",
+  ImagePath: "api/paas/v4/images/generations",
+  VideoPath: "api/paas/v4/videos/generations",
 };
 
 export const SiliconFlow = {
-  ExampleEndpoint: "https://api.siliconflow.cn/v1",
-  ChatPath: "chat/completions",
+  ExampleEndpoint: SILICONFLOW_BASE_URL,
+  ChatPath: "v1/chat/completions",
+  ListModelPath: "v1/models?&sub_type=chat",
 };
 
 export const DEFAULT_INPUT_TEMPLATE = `{{input}}`; // input / time / model / lang
