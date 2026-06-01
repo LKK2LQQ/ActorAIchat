@@ -95,3 +95,16 @@ Thumbs.db
 # secret key
 *.key
 *.key.pub
+
+# Tauri desktop app (not needed in Docker)
+/src-tauri
+
+# Windows release tooling
+/release
+/msi-install
+
+# Cloudflare Workers entry (not needed for standalone server)
+/src/index.ts
+
+# Scripts (build helpers, not runtime)
+/scripts

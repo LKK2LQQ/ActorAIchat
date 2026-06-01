@@ -15,9 +15,11 @@ FROM base AS builder
 
 RUN apk update && apk add --no-cache git
 
+# Build-time env vars (needed for mask/skill generation)
 ENV OPENAI_API_KEY=""
-ENV GOOGLE_API_KEY=""
+ENV DEEPSEEK_API_KEY=""
 ENV CODE=""
+ENV DEFAULT_MODEL="deepseek-v4-pro"
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -30,10 +32,13 @@ WORKDIR /app
 
 RUN apk add proxychains-ng
 
+# Runtime env vars
 ENV PROXY_URL=""
 ENV OPENAI_API_KEY=""
+ENV DEEPSEEK_API_KEY=""
 ENV GOOGLE_API_KEY=""
 ENV CODE=""
+ENV DEFAULT_MODEL="deepseek-v4-pro"
 ENV ENABLE_MCP=""
 
 COPY --from=builder /app/public ./public

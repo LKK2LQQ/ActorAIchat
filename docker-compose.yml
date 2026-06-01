@@ -1,38 +1,54 @@
 version: "3.9"
 services:
-  chatgpt-next-web:
-    profiles: [ "no-proxy" ]
-    container_name: chatgpt-next-web
-    image: yidadaa/chatgpt-next-web
+  actor-aichat:
+    profiles: ["no-proxy"]
+    container_name: actor-aichat
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - 3000:3000
+      - "3000:3000"
     environment:
-      - OPENAI_API_KEY=$OPENAI_API_KEY
-      - GOOGLE_API_KEY=$GOOGLE_API_KEY
-      - CODE=$CODE
-      - BASE_URL=$BASE_URL
-      - OPENAI_ORG_ID=$OPENAI_ORG_ID
-      - HIDE_USER_API_KEY=$HIDE_USER_API_KEY
-      - DISABLE_GPT4=$DISABLE_GPT4
-      - ENABLE_BALANCE_QUERY=$ENABLE_BALANCE_QUERY
-      - DISABLE_FAST_LINK=$DISABLE_FAST_LINK
-      - OPENAI_SB=$OPENAI_SB
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - CODE=${CODE}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-deepseek-v4-pro}
+      - BASE_URL=${BASE_URL}
+      - OPENAI_ORG_ID=${OPENAI_ORG_ID}
+      - HIDE_USER_API_KEY=${HIDE_USER_API_KEY}
+      - DISABLE_GPT4=${DISABLE_GPT4}
+      - ENABLE_BALANCE_QUERY=${ENABLE_BALANCE_QUERY}
+      - DISABLE_FAST_LINK=${DISABLE_FAST_LINK}
+      - ENABLE_MCP=${ENABLE_MCP:-false}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-  chatgpt-next-web-proxy:
-    profiles: [ "proxy" ]
-    container_name: chatgpt-next-web-proxy
-    image: yidadaa/chatgpt-next-web
+  actor-aichat-proxy:
+    profiles: ["proxy"]
+    container_name: actor-aichat-proxy
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - 3000:3000
+      - "3000:3000"
     environment:
-      - OPENAI_API_KEY=$OPENAI_API_KEY
-      - GOOGLE_API_KEY=$GOOGLE_API_KEY
-      - CODE=$CODE
-      - PROXY_URL=$PROXY_URL
-      - BASE_URL=$BASE_URL
-      - OPENAI_ORG_ID=$OPENAI_ORG_ID
-      - HIDE_USER_API_KEY=$HIDE_USER_API_KEY
-      - DISABLE_GPT4=$DISABLE_GPT4
-      - ENABLE_BALANCE_QUERY=$ENABLE_BALANCE_QUERY
-      - DISABLE_FAST_LINK=$DISABLE_FAST_LINK
-      - OPENAI_SB=$OPENAI_SB
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - CODE=${CODE}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-deepseek-v4-pro}
+      - PROXY_URL=${PROXY_URL}
+      - BASE_URL=${BASE_URL}
+      - OPENAI_ORG_ID=${OPENAI_ORG_ID}
+      - HIDE_USER_API_KEY=${HIDE_USER_API_KEY}
+      - DISABLE_GPT4=${DISABLE_GPT4}
+      - ENABLE_BALANCE_QUERY=${ENABLE_BALANCE_QUERY}
+      - DISABLE_FAST_LINK=${DISABLE_FAST_LINK}
+      - ENABLE_MCP=${ENABLE_MCP:-false}
+    restart: unless-stopped
