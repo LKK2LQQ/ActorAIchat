@@ -17,7 +17,7 @@ async function handle(
     return NextResponse.json({ body: "OK" }, { status: 200 });
   }
 
-  const authResult = auth(req, ModelProvider.Hunyuan);
+  const authResult = auth(req, ModelProvider.Tencent);
   if (authResult.error) {
     return NextResponse.json(authResult, {
       status: 401,

@@ -23,7 +23,7 @@ export async function handle(
     return NextResponse.json({ body: "OK" }, { status: 200 });
   }
 
-  const authResult = auth(req, ModelProvider.Ernie);
+  const authResult = auth(req, ModelProvider.Baidu);
   if (authResult.error) {
     return NextResponse.json(authResult, {
       status: 401,
