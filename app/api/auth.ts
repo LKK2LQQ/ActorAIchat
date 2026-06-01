@@ -76,13 +76,13 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
       case ModelProvider.Claude:
         systemApiKey = serverConfig.anthropicApiKey;
         break;
-      case ModelProvider.Doubao:
+      case ModelProvider.ByteDance:
         systemApiKey = serverConfig.bytedanceApiKey;
         break;
-      case ModelProvider.Ernie:
+      case ModelProvider.Baidu:
         systemApiKey = serverConfig.baiduApiKey;
         break;
-      case ModelProvider.Qwen:
+      case ModelProvider.Alibaba:
         systemApiKey = serverConfig.alibabaApiKey;
         break;
       case ModelProvider.Moonshot:

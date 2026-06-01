@@ -26,6 +26,7 @@ export const AI302_BASE_URL = "https://api.302.ai";
 export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
 
 export const BAIDU_BASE_URL = "https://aip.baidubce.com";
+export const BAIDU_OATUH_URL = "https://aip.baidubce.com/oauth/2.0/token";
 
 export const BYTEDANCE_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3";
 
