@@ -9,7 +9,8 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 
 RUN yarn config set registry 'https://registry.npmmirror.com/'
-RUN yarn install
+# --ignore-scripts: postinstall needs git + .gitmodules, handled in builder
+RUN yarn install --ignore-scripts
 
 FROM base AS builder
 
@@ -24,6 +25,9 @@ ENV DEFAULT_MODEL="deepseek-v4-pro"
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Initialize agency-agents submodule (required for yarn mask)
+RUN git submodule update --init --recursive
 
 RUN yarn build
 
