@@ -12,7 +12,7 @@ import { auth } from "./auth";
 import { isModelNotavailableInServer } from "@/app/utils/model";
 import { cloudflareAIGatewayUrl } from "@/app/utils/cloudflare";
 
-const ALLOWD_PATH = new Set([Anthropic.ChatPath, Anthropic.ChatPath1]);
+const ALLOWD_PATH = new Set([Anthropic.ChatPath]);
 
 export async function handle(
   req: NextRequest,
