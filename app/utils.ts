@@ -336,7 +336,13 @@ export function showPlugins(provider: ServiceProvider, model: string) {
   if (
     provider == ServiceProvider.OpenAI ||
     provider == ServiceProvider.Azure ||
-    provider == ServiceProvider.Moonshot
+    provider == ServiceProvider.Moonshot ||
+    provider == ServiceProvider.DeepSeek ||
+    provider == ServiceProvider.XAI ||
+    provider == ServiceProvider["302.AI"] ||
+    provider == ServiceProvider.Anthropic ||
+    provider == ServiceProvider.ByteDance ||
+    provider == ServiceProvider.Alibaba
   ) {
     return true;
   }

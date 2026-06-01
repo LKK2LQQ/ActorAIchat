@@ -26,6 +26,7 @@ export type Mask = {
 
 export const DEFAULT_MASK_STATE = {
   masks: {} as Record<string, Mask>,
+  favoritedIds: [] as string[],
   language: undefined as Lang | undefined,
 };
 
@@ -107,6 +108,20 @@ export const useMaskStore = createPersistStore(
     },
     search(text: string) {
       return Object.values(get().masks);
+    },
+    toggleFavorite(id: string) {
+      const ids = [...get().favoritedIds];
+      const idx = ids.indexOf(id);
+      if (idx >= 0) {
+        ids.splice(idx, 1);
+      } else {
+        ids.unshift(id);
+      }
+      set(() => ({ favoritedIds: ids }));
+      get().markUpdate();
+    },
+    isFavorited(id: string) {
+      return get().favoritedIds.includes(id);
     },
     setLanguage(language: Lang | undefined) {
       set({

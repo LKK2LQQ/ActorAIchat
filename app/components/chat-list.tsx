@@ -102,7 +102,8 @@ export function ChatItem(props: {
   );
 }
 
-export function ChatList(props: { narrow?: boolean }) {
+export function ChatList(props: { narrow?: boolean; filterText?: string }) {
+  const filterText = props.filterText || "";
   const [sessions, selectedIndex, selectSession, moveSession] = useChatStore(
     (state) => [
       state.sessions,

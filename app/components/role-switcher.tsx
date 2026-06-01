@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useChatStore } from "../store";
+import { useChatStore, useMaskStore } from "../store";
 import { getAgencyAgents, DEFAULT_SKILL } from "../skills";
 import { BuiltinMask } from "../masks/typing";
 import MaskIcon from "../icons/mask.svg";
@@ -32,6 +32,7 @@ interface GroupedItems {
 
 export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
   const chatStore = useChatStore();
+  const maskStore = useMaskStore();
   const session = chatStore.currentSession();
   const currentRoleName = session.mask.name;
 
@@ -78,13 +79,38 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
 
   const groupedItems: GroupedItems[] = useMemo(() => {
     const groupMap = new Map<string, BuiltinMask[]>();
-    for (const { skill, categoryLabel } of filteredSkills) {
-      const existing = groupMap.get(categoryLabel) || [];
-      existing.push(skill);
-      groupMap.set(categoryLabel, existing);
+    const favorited: BuiltinMask[] = [];
+
+    for (const item of filteredSkills) {
+      if (maskStore.isFavorited(item.skill.name)) {
+        favorited.push(item.skill);
+      } else {
+        const existing = groupMap.get(item.categoryLabel) || [];
+        existing.push(item.skill);
+        groupMap.set(item.categoryLabel, existing);
+      }
     }
 
-    return Array.from(groupMap.entries())
+    const result: GroupedItems[] = [];
+
+    if (favorited.length > 0) {
+      result.push({
+        category: "⭐ 收藏",
+        items: favorited.map((skill) => ({
+          title: skill.name,
+          subTitle:
+            (skill as any).description ||
+            extractFirstLine(
+              typeof skill.context[0]?.content === "string"
+                ? skill.context[0].content
+                : "",
+            ),
+          value: skill.name,
+        })),
+      });
+    }
+
+    const categoryGroups = Array.from(groupMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([categoryLabel, skills]) => ({
         category: categoryLabel,
@@ -100,7 +126,9 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
           value: skill.name,
         })),
       }));
-  }, [filteredSkills]);
+
+    return result.concat(categoryGroups);
+  }, [filteredSkills, maskStore.favoritedIds]);
 
   function applySkill(skill: BuiltinMask) {
     chatStore.updateTargetSession(session, (s) => {
@@ -180,6 +208,24 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
                       }}
                     >
                       <div className={styles["role-item-name"]}>
+                        <span
+                          className={styles["star-btn"]}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const found = allSkills.find(
+                              (s) => s.skill.name === item.value,
+                            );
+                            if (found)
+                              maskStore.toggleFavorite(found.skill.name);
+                          }}
+                          title={
+                            maskStore.isFavorited(item.value)
+                              ? "取消收藏"
+                              : "收藏角色"
+                          }
+                        >
+                          {maskStore.isFavorited(item.value) ? "★" : "☆"}
+                        </span>
                         {item.title}
                       </div>
                       {item.subTitle && (

@@ -1037,6 +1037,7 @@ function _Chat() {
   // prompt hints
   const promptStore = usePromptStore();
   const [promptHints, setPromptHints] = useState<RenderPrompt[]>([]);
+  const [showContextPanel, setShowContextPanel] = useState(false);
   const onSearch = useDebouncedCallback(
     (text: string) => {
       const matchedPrompts = promptStore.search(text);
@@ -1331,8 +1332,9 @@ function _Chat() {
   }
 
   const context: RenderMessage[] = useMemo(() => {
+    if (showContextPanel) return session.mask.context.slice();
     return session.mask.hideContext ? [] : session.mask.context.slice();
-  }, [session.mask.context, session.mask.hideContext]);
+  }, [session.mask.context, session.mask.hideContext, showContextPanel]);
 
   if (
     context.length === 0 &&

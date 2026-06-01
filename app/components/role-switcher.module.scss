@@ -119,6 +119,18 @@
   }
 }
 
+.star-btn {
+  cursor: pointer;
+  margin-right: 6px;
+  font-size: 14px;
+  color: var(--primary, #f5a623);
+  user-select: none;
+  transition: transform 0.2s;
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
 .role-item-name {
   font-size: 14px;
   font-weight: 500;
