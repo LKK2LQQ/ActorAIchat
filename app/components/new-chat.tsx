@@ -113,7 +113,7 @@ export function NewChat() {
     }
     return favorited.concat(rest);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allMasks, loaded, maskStore.favoritedIds]);
+  }, [allMasks, loaded]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const groups = useMaskGroup(masks);
 

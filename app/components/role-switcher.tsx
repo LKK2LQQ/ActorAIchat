@@ -128,7 +128,7 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
       }));
 
     return result.concat(categoryGroups);
-  }, [filteredSkills, maskStore.favoritedIds]);
+  }, [filteredSkills, JSON.stringify(maskStore.favoritedIds)]);
 
   function applySkill(skill: BuiltinMask) {
     chatStore.updateTargetSession(session, (s) => {
