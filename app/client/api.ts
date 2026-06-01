@@ -17,6 +17,14 @@ import { MoonshotApi } from "./platforms/moonshot";
 import { DeepSeekApi } from "./platforms/deepseek";
 import { XAIApi } from "./platforms/xai";
 import { Ai302Api } from "./platforms/ai302";
+import { ClaudeApi } from "./platforms/anthropic";
+import { ErnieApi } from "./platforms/baidu";
+import { DoubaoApi } from "./platforms/bytedance";
+import { QwenApi } from "./platforms/alibaba";
+import { HunyuanApi } from "./platforms/tencent";
+import { SparkApi } from "./platforms/iflytek";
+import { ChatGLMApi } from "./platforms/glm";
+import { SiliconflowApi } from "./platforms/siliconflow";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
@@ -145,6 +153,30 @@ export class ClientApi {
       case ModelProvider["302.AI"]:
         this.llm = new Ai302Api();
         break;
+      case ModelProvider.Claude:
+        this.llm = new ClaudeApi();
+        break;
+      case ModelProvider.Baidu:
+        this.llm = new ErnieApi();
+        break;
+      case ModelProvider.ByteDance:
+        this.llm = new DoubaoApi();
+        break;
+      case ModelProvider.Alibaba:
+        this.llm = new QwenApi();
+        break;
+      case ModelProvider.Tencent:
+        this.llm = new HunyuanApi();
+        break;
+      case ModelProvider.Iflytek:
+        this.llm = new SparkApi();
+        break;
+      case ModelProvider.ChatGLM:
+        this.llm = new ChatGLMApi();
+        break;
+      case ModelProvider.SiliconFlow:
+        this.llm = new SiliconflowApi();
+        break;
       default:
         this.llm = new ChatGPTApi();
     }
@@ -228,6 +260,15 @@ export function getHeaders(ignoreHeaders: boolean = false) {
     const isDeepSeek = modelConfig.providerName === ServiceProvider.DeepSeek;
     const isXAI = modelConfig.providerName === ServiceProvider.XAI;
     const isAI302 = modelConfig.providerName === ServiceProvider["302.AI"];
+    const isAnthropic = modelConfig.providerName === ServiceProvider.Anthropic;
+    const isBaidu = modelConfig.providerName === ServiceProvider.Baidu;
+    const isBytedance = modelConfig.providerName === ServiceProvider.ByteDance;
+    const isAlibaba = modelConfig.providerName === ServiceProvider.Alibaba;
+    const isTencent = modelConfig.providerName === ServiceProvider.Tencent;
+    const isIflytek = modelConfig.providerName === ServiceProvider.Iflytek;
+    const isChatGLM = modelConfig.providerName === ServiceProvider.ChatGLM;
+    const isSiliconFlow =
+      modelConfig.providerName === ServiceProvider.SiliconFlow;
     const isEnabledAccessControl = accessStore.enabledAccessControl();
     const apiKey = isGoogle
       ? accessStore.googleApiKey
@@ -241,6 +282,22 @@ export function getHeaders(ignoreHeaders: boolean = false) {
       ? accessStore.deepseekApiKey
       : isAI302
       ? accessStore.ai302ApiKey
+      : isAnthropic
+      ? accessStore.anthropicApiKey
+      : isBaidu
+      ? accessStore.baiduApiKey
+      : isBytedance
+      ? accessStore.bytedanceApiKey
+      : isAlibaba
+      ? accessStore.alibabaApiKey
+      : isTencent
+      ? accessStore.tencentSecretKey
+      : isIflytek
+      ? accessStore.iflytekApiKey
+      : isChatGLM
+      ? accessStore.chatglmApiKey
+      : isSiliconFlow
+      ? accessStore.siliconflowApiKey
       : accessStore.openaiApiKey;
     return {
       isGoogle,
@@ -249,6 +306,14 @@ export function getHeaders(ignoreHeaders: boolean = false) {
       isDeepSeek,
       isXAI,
       isAI302,
+      isAnthropic,
+      isBaidu,
+      isBytedance,
+      isAlibaba,
+      isTencent,
+      isIflytek,
+      isChatGLM,
+      isSiliconFlow,
       apiKey,
       isEnabledAccessControl,
     };
@@ -265,6 +330,14 @@ export function getHeaders(ignoreHeaders: boolean = false) {
     isDeepSeek,
     isXAI,
     isAI302,
+    isAnthropic,
+    isBaidu,
+    isBytedance,
+    isAlibaba,
+    isTencent,
+    isIflytek,
+    isChatGLM,
+    isSiliconFlow,
     apiKey,
     isEnabledAccessControl,
   } = getConfig();
@@ -296,6 +369,22 @@ export function getClientApi(provider: ServiceProvider): ClientApi {
       return new ClientApi(ModelProvider.XAI);
     case ServiceProvider["302.AI"]:
       return new ClientApi(ModelProvider["302.AI"]);
+    case ServiceProvider.Anthropic:
+      return new ClientApi(ModelProvider.Claude);
+    case ServiceProvider.Baidu:
+      return new ClientApi(ModelProvider.Baidu);
+    case ServiceProvider.ByteDance:
+      return new ClientApi(ModelProvider.ByteDance);
+    case ServiceProvider.Alibaba:
+      return new ClientApi(ModelProvider.Alibaba);
+    case ServiceProvider.Tencent:
+      return new ClientApi(ModelProvider.Tencent);
+    case ServiceProvider.Iflytek:
+      return new ClientApi(ModelProvider.Iflytek);
+    case ServiceProvider.ChatGLM:
+      return new ClientApi(ModelProvider.ChatGLM);
+    case ServiceProvider.SiliconFlow:
+      return new ClientApi(ModelProvider.SiliconFlow);
     default:
       return new ClientApi(ModelProvider.GPT);
   }
