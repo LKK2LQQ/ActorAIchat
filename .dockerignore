@@ -103,8 +103,5 @@ Thumbs.db
 /release
 /msi-install
 
-# Cloudflare Workers entry (not needed for standalone server)
-/src/index.ts
-
 # Scripts (build helpers, not runtime)
 /scripts
