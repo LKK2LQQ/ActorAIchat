@@ -1,8 +1,0 @@
-name = "actor-aichat"
-main = "src/index.ts"
-compatibility_date = "2026-05-31"
-
-[assets]
-directory = "./out"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
