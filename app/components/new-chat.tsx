@@ -85,13 +85,20 @@ export function NewChat() {
   // Filter masks by current UI language (cn → zh, en → en)
   const masks = useMemo(() => {
     const langKey = getLang() === "cn" ? "zh" : "en";
-    return allMasks.filter((m) => {
+    const filtered = allMasks.filter((m) => {
       const maskLang = (m as any).lang;
       if (!maskLang) return true; // user-created masks
       return maskLang === langKey;
     });
+    const favorited = [];
+    const rest = [];
+    for (const m of filtered) {
+      if (maskStore.isFavorited(m.name)) favorited.push(m);
+      else rest.push(m);
+    }
+    return favorited.concat(rest);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allMasks, loaded]);
+  }, [allMasks, loaded, maskStore.favoritedIds]);
 
   const groups = useMaskGroup(masks);
 
