@@ -18,7 +18,12 @@ import { showConfirm } from "./ui-lib";
 import { BUILTIN_MASK_STORE } from "../masks";
 import clsx from "clsx";
 
-function MaskItem(props: { mask: Mask; onClick?: () => void }) {
+function MaskItem(props: {
+  mask: Mask;
+  onClick?: () => void;
+  favorited?: boolean;
+  onToggleFavorite?: () => void;
+}) {
   return (
     <div className={styles["mask"]} onClick={props.onClick}>
       <MaskAvatar
@@ -26,6 +31,16 @@ function MaskItem(props: { mask: Mask; onClick?: () => void }) {
         model={props.mask.modelConfig.model}
       />
       <div className={clsx(styles["mask-name"], "one-line")}>
+        <span
+          className={styles["mask-star"]}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onToggleFavorite?.();
+          }}
+          title={props.favorited ? "取消收藏" : "收藏角色"}
+        >
+          {props.favorited ? "★" : "☆"}
+        </span>
         {props.mask.name}
       </div>
     </div>

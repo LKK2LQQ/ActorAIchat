@@ -115,6 +115,13 @@
           border-color: var(--primary);
         }
 
+        .mask-star {
+          margin-right: 4px;
+          cursor: pointer;
+          font-size: 12px;
+          color: #f5a623;
+          user-select: none;
+        }
         .mask-name {
           margin-left: 10px;
           font-size: 14px;
