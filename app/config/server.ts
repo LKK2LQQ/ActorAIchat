@@ -56,6 +56,27 @@ declare global {
       AI302_URL?: string;
       AI302_API_KEY?: string;
 
+      ANTHROPIC_API_KEY?: string;
+      ANTHROPIC_API_VERSION?: string;
+      ANTHROPIC_URL?: string;
+      BAIDU_API_KEY?: string;
+      BAIDU_URL?: string;
+      BAIDU_SECRET_KEY?: string;
+      BYTEDANCE_API_KEY?: string;
+      BYTEDANCE_URL?: string;
+      ALIBABA_API_KEY?: string;
+      ALIBABA_URL?: string;
+      TENCENT_SECRET_KEY?: string;
+      TENCENT_SECRET_ID?: string;
+      TENCENT_URL?: string;
+      IFLYTEK_API_KEY?: string;
+      IFLYTEK_API_SECRET?: string;
+      IFLYTEK_URL?: string;
+      CHATGLM_API_KEY?: string;
+      CHATGLM_URL?: string;
+      SILICONFLOW_API_KEY?: string;
+      SILICONFLOW_URL?: string;
+
       // custom template for preprocessing user input
       DEFAULT_INPUT_TEMPLATE?: string;
 
@@ -166,6 +187,35 @@ export const getServerSideConfig = () => {
     isAI302,
     ai302Url: process.env.AI302_URL,
     ai302ApiKey: getApiKey(process.env.AI302_API_KEY),
+
+    isAnthropic: !!process.env.ANTHROPIC_API_KEY,
+    anthropicApiKey: getApiKey(process.env.ANTHROPIC_API_KEY),
+    anthropicApiVersion: process.env.ANTHROPIC_API_VERSION,
+    anthropicUrl: process.env.ANTHROPIC_URL,
+    isBaidu: !!process.env.BAIDU_API_KEY,
+    baiduApiKey: getApiKey(process.env.BAIDU_API_KEY),
+    baiduUrl: process.env.BAIDU_URL,
+    baiduSecretKey: process.env.BAIDU_SECRET_KEY,
+    isBytedance: !!process.env.BYTEDANCE_API_KEY,
+    bytedanceApiKey: getApiKey(process.env.BYTEDANCE_API_KEY),
+    bytedanceUrl: process.env.BYTEDANCE_URL,
+    isAlibaba: !!process.env.ALIBABA_API_KEY,
+    alibabaApiKey: getApiKey(process.env.ALIBABA_API_KEY),
+    alibabaUrl: process.env.ALIBABA_URL,
+    isTencent: !!process.env.TENCENT_SECRET_KEY,
+    tencentUrl: process.env.TENCENT_URL,
+    tencentSecretKey: getApiKey(process.env.TENCENT_SECRET_KEY),
+    tencentSecretId: process.env.TENCENT_SECRET_ID,
+    isIflytek: !!process.env.IFLYTEK_API_KEY,
+    iflytekUrl: process.env.IFLYTEK_URL,
+    iflytekApiKey: getApiKey(process.env.IFLYTEK_API_KEY),
+    iflytekApiSecret: process.env.IFLYTEK_API_SECRET,
+    isChatGLM: !!process.env.CHATGLM_API_KEY,
+    chatglmApiKey: getApiKey(process.env.CHATGLM_API_KEY),
+    chatglmUrl: process.env.CHATGLM_URL,
+    isSiliconFlow: !!process.env.SILICONFLOW_API_KEY,
+    siliconflowUrl: process.env.SILICONFLOW_URL,
+    siliconflowApiKey: getApiKey(process.env.SILICONFLOW_API_KEY),
 
     gtmId: process.env.GTM_ID,
     gaId: process.env.GA_ID || DEFAULT_GA_ID,

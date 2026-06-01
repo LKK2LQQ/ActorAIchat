@@ -57,6 +57,13 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
   if (!apiKey) {
     const serverConfig = getServerSideConfig();
 
+    // const systemApiKey =
+    //   modelProvider === ModelProvider.GeminiPro
+    //     ? serverConfig.googleApiKey
+    //     : serverConfig.isAzure
+    //     ? serverConfig.azureApiKey
+    //     : serverConfig.apiKey;
+
     let systemApiKey: string | undefined;
 
     switch (modelProvider) {
@@ -66,8 +73,24 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
       case ModelProvider.GeminiPro:
         systemApiKey = serverConfig.googleApiKey;
         break;
+      case ModelProvider.Claude:
+        systemApiKey = serverConfig.anthropicApiKey;
+        break;
+      case ModelProvider.Doubao:
+        systemApiKey = serverConfig.bytedanceApiKey;
+        break;
+      case ModelProvider.Ernie:
+        systemApiKey = serverConfig.baiduApiKey;
+        break;
+      case ModelProvider.Qwen:
+        systemApiKey = serverConfig.alibabaApiKey;
+        break;
       case ModelProvider.Moonshot:
         systemApiKey = serverConfig.moonshotApiKey;
+        break;
+      case ModelProvider.Iflytek:
+        systemApiKey =
+          serverConfig.iflytekApiKey + ":" + serverConfig.iflytekApiSecret;
         break;
       case ModelProvider.DeepSeek:
         systemApiKey = serverConfig.deepseekApiKey;
@@ -75,8 +98,11 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
       case ModelProvider.XAI:
         systemApiKey = serverConfig.xaiApiKey;
         break;
-      case ModelProvider["302.AI"]:
-        systemApiKey = serverConfig.ai302ApiKey;
+      case ModelProvider.ChatGLM:
+        systemApiKey = serverConfig.chatglmApiKey;
+        break;
+      case ModelProvider.SiliconFlow:
+        systemApiKey = serverConfig.siliconflowApiKey;
         break;
       case ModelProvider.GPT:
       default:

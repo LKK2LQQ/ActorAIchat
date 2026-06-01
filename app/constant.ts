@@ -23,6 +23,22 @@ export const XAI_BASE_URL = "https://api.x.ai";
 
 export const AI302_BASE_URL = "https://api.302.ai";
 
+export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
+
+export const BAIDU_BASE_URL = "https://aip.baidubce.com";
+
+export const BYTEDANCE_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3";
+
+export const ALIBABA_BASE_URL = "https://dashscope.aliyuncs.com/api";
+
+export const TENCENT_BASE_URL = "https://hunyuan.tencentcloudapi.com";
+
+export const IFLYTEK_BASE_URL = "https://spark-api-open.xf-yun.com/v1";
+
+export const CHATGLM_BASE_URL = "https://open.bigmodel.cn/api/paas/v4";
+
+export const SILICONFLOW_BASE_URL = "https://api.siliconflow.cn/v1";
+
 export const CACHE_URL_PREFIX = "/api/cache";
 export const UPLOAD_URL = `${CACHE_URL_PREFIX}/upload`;
 
@@ -52,6 +68,14 @@ export enum ApiPath {
   XAI = "/api/xai",
   DeepSeek = "/api/deepseek",
   "302.AI" = "/api/302ai",
+  Anthropic = "/api/anthropic",
+  Baidu = "/api/baidu",
+  ByteDance = "/api/bytedance",
+  Alibaba = "/api/alibaba",
+  Tencent = "/api/tencent",
+  Iflytek = "/api/iflytek",
+  ChatGLM = "/api/chatglm",
+  SiliconFlow = "/api/siliconflow",
 }
 
 export enum SlotID {
@@ -103,6 +127,14 @@ export enum ServiceProvider {
   XAI = "XAI",
   DeepSeek = "DeepSeek",
   "302.AI" = "302.AI",
+  Anthropic = "Anthropic",
+  Baidu = "Baidu",
+  ByteDance = "ByteDance",
+  Alibaba = "Alibaba",
+  Tencent = "Tencent",
+  Iflytek = "Iflytek",
+  ChatGLM = "ChatGLM",
+  SiliconFlow = "SiliconFlow",
 }
 
 // Google API safety settings, see https://ai.google.dev/gemini-api/docs/safety-settings
@@ -122,6 +154,14 @@ export enum ModelProvider {
   XAI = "XAI",
   DeepSeek = "DeepSeek",
   "302.AI" = "302.AI",
+  Claude = "Claude",
+  Baidu = "Baidu",
+  ByteDance = "ByteDance",
+  Alibaba = "Alibaba",
+  Tencent = "Tencent",
+  Iflytek = "Iflytek",
+  ChatGLM = "ChatGLM",
+  SiliconFlow = "SiliconFlow",
 }
 
 export const Stability = {
@@ -173,6 +213,46 @@ export const AI302 = {
   ChatPath: "v1/chat/completions",
   EmbeddingsPath: "jina/v1/embeddings",
   ListModelPath: "v1/models?llm=1",
+};
+
+export const Anthropic = {
+  ExampleEndpoint: "https://api.anthropic.com",
+  ChatPath: "v1/messages",
+};
+
+export const Baidu = {
+  ExampleEndpoint: "https://aip.baidubce.com",
+  ChatPath: "rpc/2.0/ai_custom/v1/wenxinworkshop/chat/{model}",
+};
+
+export const ByteDance = {
+  ExampleEndpoint: "https://ark.cn-beijing.volces.com/api/v3",
+  ChatPath: "chat/completions",
+};
+
+export const Alibaba = {
+  ExampleEndpoint: "https://dashscope.aliyuncs.com/api",
+  ChatPath: "v1/services/aigc/text-generation/generation",
+};
+
+export const Tencent = {
+  ExampleEndpoint: "https://hunyuan.tencentcloudapi.com",
+  ChatPath: "",
+};
+
+export const Iflytek = {
+  ExampleEndpoint: "https://spark-api-open.xf-yun.com/v1",
+  ChatPath: "chat/completions",
+};
+
+export const ChatGLM = {
+  ExampleEndpoint: "https://open.bigmodel.cn/api/paas/v4",
+  ChatPath: "chat/completions",
+};
+
+export const SiliconFlow = {
+  ExampleEndpoint: "https://api.siliconflow.cn/v1",
+  ChatPath: "chat/completions",
 };
 
 export const DEFAULT_INPUT_TEMPLATE = `{{input}}`; // input / time / model / lang
@@ -361,6 +441,58 @@ const xAIModes = [
 
 const ai302Models = ["gemini-2.5-pro", "gemini-2.5-pro-preview-06-05"];
 
+const anthropicModels = [
+  "claude-opus-4-8",
+  "claude-opus-4-7",
+  "claude-sonnet-4-6",
+  "claude-haiku-4-5-20251001",
+];
+
+const baiduModels = [
+  "ernie-5.0",
+  "ernie-5.0-preview",
+  "ernie-4.5",
+  "ernie-4.5-turbo",
+  "ernie-x1",
+  "ernie-x1.1",
+];
+
+const bytedanceModels = [
+  "doubao-seed-1.8",
+  "doubao-seed-1.6",
+  "seed-oss-36b-instruct",
+];
+
+const alibabaModels = [
+  "qwen3-max",
+  "qwen3-next",
+  "qwen3-vl",
+  "qwen3-omni",
+  "qwen3-coder",
+  "qwen3-235b-a22b",
+  "qwen3-32b",
+];
+
+const tencentModels = [
+  "hunyuan-2.0-think",
+  "hunyuan-2.0-instruct",
+  "hunyuan-t1",
+  "hunyuan-turbos",
+];
+
+const iflytekModels = ["spark-x1.5", "spark-x1", "4.0Ultra"];
+
+const chatglmModels = ["glm-4.7", "glm-4.6", "glm-4.6v", "glm-4.5", "glm-4.5v"];
+
+const siliconflowModels = [
+  "deepseek-ai/DeepSeek-V3.2",
+  "deepseek-ai/DeepSeek-R1",
+  "Qwen/Qwen3-235B-A22B",
+  "Qwen/Qwen3-32B",
+  "Pro/zai-org/GLM-4.7",
+  "THUDM/glm-4-9b-chat",
+];
+
 let seq = 1000; // 内置的模型序号生成器从1000开始
 export const DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
@@ -438,6 +570,94 @@ export const DEFAULT_MODELS = [
       providerName: "302.AI",
       providerType: "ai302",
       sorted: 7,
+    },
+  })),
+  ...anthropicModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "anthropic",
+      providerName: "Anthropic",
+      providerType: "anthropic",
+      sorted: 8,
+    },
+  })),
+  ...baiduModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "baidu",
+      providerName: "Baidu",
+      providerType: "baidu",
+      sorted: 9,
+    },
+  })),
+  ...bytedanceModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "bytedance",
+      providerName: "ByteDance",
+      providerType: "bytedance",
+      sorted: 10,
+    },
+  })),
+  ...alibabaModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "alibaba",
+      providerName: "Alibaba",
+      providerType: "alibaba",
+      sorted: 11,
+    },
+  })),
+  ...tencentModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "tencent",
+      providerName: "Tencent",
+      providerType: "tencent",
+      sorted: 12,
+    },
+  })),
+  ...iflytekModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "iflytek",
+      providerName: "Iflytek",
+      providerType: "iflytek",
+      sorted: 13,
+    },
+  })),
+  ...chatglmModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "chatglm",
+      providerName: "ChatGLM",
+      providerType: "chatglm",
+      sorted: 14,
+    },
+  })),
+  ...siliconflowModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "siliconflow",
+      providerName: "SiliconFlow",
+      providerType: "siliconflow",
+      sorted: 15,
     },
   })),
 ] as const;
