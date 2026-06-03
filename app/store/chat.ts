@@ -97,6 +97,15 @@ export interface ChatStat {
   totalCost: number;
 }
 
+export type AgentConfig = {
+  id: string;
+  mask: Mask;
+  enabled: boolean;
+  turnOrder: number;
+};
+
+export type ChatSessionMode = "single" | "auto" | "manual";
+
 export interface ChatSession {
   id: string;
   topic: string;
@@ -109,6 +118,10 @@ export interface ChatSession {
   clearContextIndex?: number;
 
   mask: Mask;
+  agents: AgentConfig[];
+  mode: ChatSessionMode;
+  maxTurnRounds: number;
+  currentTurnRound: number;
 }
 
 export const DEFAULT_TOPIC = Locale.Store.DefaultTopic;
@@ -136,6 +149,10 @@ function createEmptySession(): ChatSession {
     lastSummarizeIndex: 0,
 
     mask: createEmptyMask(),
+    agents: [],
+    mode: "single",
+    maxTurnRounds: 10,
+    currentTurnRound: 0,
   };
 }
 
@@ -357,6 +374,135 @@ export const useChatStore = createPersistStore(
         get().selectSession(limit(i + delta));
       },
 
+      // ── Agent group chat ───────────────────────────────────────
+
+      addAgent(mask: Mask, turnOrder?: number) {
+        const session = get().currentSession();
+        const agent: AgentConfig = {
+          id: nanoid(),
+          mask: { ...mask, modelConfig: { ...mask.modelConfig } },
+          enabled: true,
+          turnOrder: turnOrder ?? session.agents.length,
+        };
+        get().updateTargetSession(session, (s) => {
+          s.agents = [...(s.agents || []), agent];
+        });
+      },
+
+      removeAgent(agentId: string) {
+        const session = get().currentSession();
+        get().updateTargetSession(session, (s) => {
+          s.agents = (s.agents || []).filter((a) => a.id !== agentId);
+        });
+      },
+
+      toggleAgent(agentId: string) {
+        const session = get().currentSession();
+        get().updateTargetSession(session, (s) => {
+          s.agents = (s.agents || []).map((a) =>
+            a.id === agentId ? { ...a, enabled: !a.enabled } : a,
+          );
+        });
+      },
+
+      setSessionMode(mode: ChatSessionMode) {
+        const session = get().currentSession();
+        get().updateTargetSession(session, (s) => {
+          s.mode = mode;
+          s.currentTurnRound = 0;
+        });
+      },
+
+      async triggerNextAgent(session: ChatSession, lastAgentId: string) {
+        if (session.mode !== "auto") return;
+        if (session.currentTurnRound >= (session.maxTurnRounds || 10)) return;
+
+        const enabledAgents = (session.agents || [])
+          .filter((a) => a.enabled)
+          .sort((a, b) => a.turnOrder - b.turnOrder);
+
+        if (enabledAgents.length === 0) return;
+
+        const lastIdx = enabledAgents.findIndex((a) => a.id === lastAgentId);
+        const nextIdx = lastIdx < 0 ? 0 : (lastIdx + 1) % enabledAgents.length;
+        const nextAgent = enabledAgents[nextIdx];
+
+        if (nextIdx === 0) {
+          get().updateTargetSession(session, (s) => {
+            s.currentTurnRound = (s.currentTurnRound || 0) + 1;
+          });
+        }
+
+        const modelConfig = nextAgent.mask.modelConfig;
+        const api: ClientApi = getClientApi(modelConfig.providerName);
+
+        const botMessage = createMessage({
+          role: "assistant",
+          streaming: true,
+          model: modelConfig.model,
+          agentId: nextAgent.id,
+          agentName: nextAgent.mask.name,
+        });
+
+        get().updateTargetSession(session, (s) => {
+          s.messages = [...s.messages, botMessage];
+        });
+
+        const context = nextAgent.mask.context || [];
+        const recentMsgs = session.messages
+          .slice(-10)
+          .filter((m) => m.role !== "system");
+        const sendMessages = [
+          ...context.map((c) => ({ ...c })),
+          ...recentMsgs,
+        ] as any[];
+
+        api.llm.chat({
+          messages: sendMessages,
+          config: { ...modelConfig, stream: true },
+          onUpdate(message) {
+            botMessage.streaming = true;
+            if (message) botMessage.content = message;
+            get().updateTargetSession(session, (s) => {
+              s.messages = s.messages.concat();
+            });
+          },
+          async onFinish(message, _res, usage) {
+            botMessage.streaming = false;
+            if (message) {
+              botMessage.content = message;
+              botMessage.date = new Date().toLocaleString();
+              if (usage) {
+                botMessage.usage = {
+                  ...usage,
+                  cost: estimateCost(
+                    modelConfig.model,
+                    usage.promptTokens,
+                    usage.completionTokens,
+                  ),
+                };
+              }
+              get().onNewMessage(botMessage, session);
+            }
+            get().triggerNextAgent(session, nextAgent.id);
+          },
+          onError(err) {
+            botMessage.streaming = false;
+            botMessage.isError = true;
+            get().updateTargetSession(session, (s) => {
+              s.messages = s.messages.concat();
+            });
+          },
+          onController(controller) {
+            ChatControllerPool.addController(
+              session.id,
+              botMessage.id,
+              controller,
+            );
+          },
+        });
+      },
+
       deleteSession(index: number) {
         const deletingLastSession = get().sessions.length === 1;
         const deletedSession = get().sessions.at(index);
@@ -509,6 +655,8 @@ export const useChatStore = createPersistStore(
                 };
               }
               get().onNewMessage(botMessage, session);
+              // Trigger next agent in auto mode
+              get().triggerNextAgent(session, "__user__");
             }
             ChatControllerPool.remove(session.id, botMessage.id);
           },
@@ -1063,11 +1211,17 @@ export const useChatStore = createPersistStore(
           s.stat.completionTokens = s.stat.completionTokens ?? 0;
           s.stat.totalTokens = s.stat.totalTokens ?? 0;
           s.stat.totalCost = s.stat.totalCost ?? 0;
+          s.agents = s.agents ?? [];
+          s.mode = s.mode ?? "single";
+          s.maxTurnRounds = s.maxTurnRounds ?? 10;
+          s.currentTurnRound = s.currentTurnRound ?? 0;
           s.messages.forEach((m: any) => {
             m.usage = m.usage ?? undefined;
             m.retryCount = m.retryCount ?? 0;
             m.maxRetries = m.maxRetries ?? 3;
             m.partialContent = m.partialContent ?? undefined;
+            m.agentId = m.agentId ?? undefined;
+            m.agentName = m.agentName ?? undefined;
           });
         });
       }

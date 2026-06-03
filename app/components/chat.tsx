@@ -1866,6 +1866,16 @@ function _Chat() {
                                 <>
                                   {["system"].includes(message.role) ? (
                                     <Avatar avatar="2699-fe0f" />
+                                  ) : (message as any).agentId ? (
+                                    <MaskAvatar
+                                      avatar={
+                                        (message as any).agentName || "gpt-bot"
+                                      }
+                                      model={
+                                        message.model ||
+                                        session.mask.modelConfig.model
+                                      }
+                                    />
                                   ) : (
                                     <MaskAvatar
                                       avatar={session.mask.avatar}
@@ -1880,7 +1890,11 @@ function _Chat() {
                             </div>
                             {!isUser && (
                               <div className={styles["chat-model-name"]}>
-                                {message.model}
+                                {(message as any).agentName
+                                  ? `${(message as any).agentName} (${
+                                      message.model
+                                    })`
+                                  : message.model}
                                 {message.usage && (
                                   <span
                                     style={{
