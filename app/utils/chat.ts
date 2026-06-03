@@ -371,6 +371,21 @@ export function stream(
           if (chunk) {
             remainText += chunk;
           }
+          // Capture usage info from SSE chunk (OpenAI-compatible format)
+          if (!usageInfo) {
+            try {
+              const json = JSON.parse(text);
+              if (json.usage) {
+                usageInfo = {
+                  promptTokens: json.usage.prompt_tokens ?? 0,
+                  completionTokens: json.usage.completion_tokens ?? 0,
+                  totalTokens: json.usage.total_tokens ?? 0,
+                };
+              }
+            } catch {
+              // Not JSON or no usage field — ignore
+            }
+          }
         } catch (e) {
           console.error("[Request] parse error", text, msg, e);
         }
@@ -419,6 +434,9 @@ export function streamWithThink(
   let isInThinkingMode = false;
   let lastIsThinking = false;
   let lastIsThinkingTagged = false; //between <think> and </think> tags
+  let usageInfo:
+    | { promptTokens: number; completionTokens: number; totalTokens: number }
+    | undefined;
 
   // animate response to make it looks smooth
   function animateResponseText() {
@@ -517,7 +535,7 @@ export function streamWithThink(
       }
       console.debug("[ChatAPI] end");
       finished = true;
-      options.onFinish(responseText + remainText, responseRes);
+      options.onFinish(responseText + remainText, responseRes, usageInfo);
     }
   };
 

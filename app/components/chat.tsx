@@ -1715,6 +1715,13 @@ function _Chat() {
             </div>
             <div className="window-header-sub-title">
               {Locale.Chat.SubTitle(session.messages.length)}
+              {session.stat.totalTokens > 0 && (
+                <span style={{ marginLeft: "8px", opacity: 0.6 }}>
+                  | ~{Locale.Chat.Tokens(session.stat.totalTokens)}
+                  {session.stat.totalCost > 0 &&
+                    ` (${Locale.Chat.Cost(session.stat.totalCost)})`}
+                </span>
+              )}
             </div>
           </div>
           <div className="window-actions">
@@ -1874,6 +1881,25 @@ function _Chat() {
                             {!isUser && (
                               <div className={styles["chat-model-name"]}>
                                 {message.model}
+                                {message.usage && (
+                                  <span
+                                    style={{
+                                      marginLeft: "8px",
+                                      fontSize: "11px",
+                                      opacity: 0.5,
+                                    }}
+                                  >
+                                    ~
+                                    {Locale.Chat.Tokens(
+                                      message.usage.totalTokens,
+                                    )}
+                                    {message.usage.cost
+                                      ? ` (${Locale.Chat.Cost(
+                                          message.usage.cost,
+                                        )})`
+                                      : ""}
+                                  </span>
+                                )}
                               </div>
                             )}
 

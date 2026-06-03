@@ -23,6 +23,8 @@ const en: LocaleType = {
   },
   Chat: {
     SubTitle: (count: number) => `${count} messages`,
+    Tokens: (count: number) => `${(count / 1000).toFixed(1)}k tokens`,
+    Cost: (amount: number) => `$${amount.toFixed(4)}`,
     EditMessage: {
       Title: "Edit All Messages",
       Topic: {

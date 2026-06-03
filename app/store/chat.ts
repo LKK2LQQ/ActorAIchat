@@ -32,6 +32,7 @@ import Locale, { getLang } from "../locales";
 import { prettyObject } from "../utils/format";
 import { createPersistStore } from "../utils/store";
 import { estimateTokenLength } from "../utils/token";
+import { estimateCost } from "../utils/pricing";
 import { ModelConfig, ModelType, useAppConfig } from "./config";
 import { useAccessStore } from "./access";
 import { collectModelsWithDefaultModel } from "../utils/model";
@@ -54,6 +55,13 @@ export type ChatMessageTool = {
   errorMsg?: string;
 };
 
+export type ChatMessageUsage = {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  cost?: number;
+};
+
 export type ChatMessage = RequestMessage & {
   date: string;
   streaming?: boolean;
@@ -63,6 +71,10 @@ export type ChatMessage = RequestMessage & {
   tools?: ChatMessageTool[];
   audio_url?: string;
   isMcpResponse?: boolean;
+  usage?: ChatMessageUsage;
+  retryCount?: number;
+  maxRetries?: number;
+  partialContent?: string;
 };
 
 export function createMessage(override: Partial<ChatMessage>): ChatMessage {
@@ -79,6 +91,10 @@ export interface ChatStat {
   tokenCount: number;
   wordCount: number;
   charCount: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  totalCost: number;
 }
 
 export interface ChatSession {
@@ -111,6 +127,10 @@ function createEmptySession(): ChatSession {
       tokenCount: 0,
       wordCount: 0,
       charCount: 0,
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+      totalCost: 0,
     },
     lastUpdate: Date.now(),
     lastSummarizeIndex: 0,
@@ -473,11 +493,21 @@ export const useChatStore = createPersistStore(
               session.messages = session.messages.concat();
             });
           },
-          async onFinish(message) {
+          async onFinish(message, _res, usage) {
             botMessage.streaming = false;
             if (message) {
               botMessage.content = message;
               botMessage.date = new Date().toLocaleString();
+              if (usage) {
+                botMessage.usage = {
+                  ...usage,
+                  cost: estimateCost(
+                    modelConfig.model,
+                    usage.promptTokens,
+                    usage.completionTokens,
+                  ),
+                };
+              }
               get().onNewMessage(botMessage, session);
             }
             ChatControllerPool.remove(session.id, botMessage.id);
@@ -801,8 +831,21 @@ export const useChatStore = createPersistStore(
 
       updateStat(message: ChatMessage, session: ChatSession) {
         get().updateTargetSession(session, (session) => {
-          session.stat.charCount += message.content.length;
-          // TODO: should update chat count and word count
+          const text =
+            typeof message.content === "string"
+              ? message.content
+              : Array.isArray(message.content)
+              ? message.content.map((c: any) => c.text || "").join("")
+              : "";
+          session.stat.charCount += text.length;
+          session.stat.wordCount += text.split(/\s+/).filter(Boolean).length;
+          session.stat.tokenCount += estimateTokenLength(text);
+          if (message.usage) {
+            session.stat.promptTokens += message.usage.promptTokens;
+            session.stat.completionTokens += message.usage.completionTokens;
+            session.stat.totalTokens += message.usage.totalTokens;
+            session.stat.totalCost += message.usage.cost ?? 0;
+          }
         });
       },
       updateTargetSession(
@@ -863,7 +906,7 @@ export const useChatStore = createPersistStore(
   },
   {
     name: StoreKey.Chat,
-    version: 3.3,
+    version: 3.4,
     migrate(persistedState, version) {
       const state = persistedState as any;
       const newState = JSON.parse(
@@ -894,15 +937,9 @@ export const useChatStore = createPersistStore(
       }
 
       // Enable `enableInjectSystemPrompts` attribute for old sessions.
-      // Resolve issue of old sessions not automatically enabling.
       if (version < 3.1) {
         newState.sessions.forEach((s) => {
-          if (
-            // Exclude those already set by user
-            !s.mask.modelConfig.hasOwnProperty("enableInjectSystemPrompts")
-          ) {
-            // Because users may have changed this configuration,
-            // the user's current configuration is used instead of the default
+          if (!s.mask.modelConfig.hasOwnProperty("enableInjectSystemPrompts")) {
             const config = useAppConfig.getState();
             s.mask.modelConfig.enableInjectSystemPrompts =
               config.modelConfig.enableInjectSystemPrompts;
@@ -925,6 +962,22 @@ export const useChatStore = createPersistStore(
           const config = useAppConfig.getState();
           s.mask.modelConfig.compressModel = "";
           s.mask.modelConfig.compressProviderName = "";
+        });
+      }
+
+      // add token tracking fields
+      if (version < 3.4) {
+        newState.sessions.forEach((s: any) => {
+          s.stat.promptTokens = s.stat.promptTokens ?? 0;
+          s.stat.completionTokens = s.stat.completionTokens ?? 0;
+          s.stat.totalTokens = s.stat.totalTokens ?? 0;
+          s.stat.totalCost = s.stat.totalCost ?? 0;
+          s.messages.forEach((m: any) => {
+            m.usage = m.usage ?? undefined;
+            m.retryCount = m.retryCount ?? 0;
+            m.maxRetries = m.maxRetries ?? 3;
+            m.partialContent = m.partialContent ?? undefined;
+          });
         });
       }
 

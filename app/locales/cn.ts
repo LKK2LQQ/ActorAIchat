@@ -22,6 +22,8 @@ const cn = {
   },
   Chat: {
     SubTitle: (count: number) => `共 ${count} 条对话`,
+    Tokens: (count: number) => `${(count / 1000).toFixed(1)}k tokens`,
+    Cost: (amount: number) => `$${amount.toFixed(4)}`,
     EditMessage: {
       Title: "编辑消息记录",
       Topic: {
