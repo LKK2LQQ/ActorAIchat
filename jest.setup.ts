@@ -54,7 +54,7 @@ if (typeof window !== "undefined") {
   // matchMedia
   Object.defineProperty(window, "matchMedia", {
     writable: true,
-    value: ((query: string) => ({
+    value: (query: string) => ({
       matches: false,
       media: query,
       onchange: null,
@@ -63,6 +63,6 @@ if (typeof window !== "undefined") {
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
       dispatchEvent: jest.fn(),
-    })),
+    }),
   } as PropertyDescriptor);
 }
