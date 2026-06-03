@@ -223,9 +223,16 @@ export const Anthropic = {
 };
 
 export const Baidu = {
-  ExampleEndpoint: "https://aip.baidubce.com",
-  ChatPath: (modelName: string) =>
-    `rpc/2.0/ai_custom/v1/wenxinworkshop/chat/${modelName}`,
+  ExampleEndpoint: BAIDU_BASE_URL,
+  ChatPath: (modelName: string) => {
+    let endpoint = modelName;
+    if (modelName === "ernie-4.0-8k") endpoint = "completions_pro";
+    if (modelName === "ernie-4.0-8k-preview-0518")
+      endpoint = "completions_adv_pro";
+    if (modelName === "ernie-3.5-8k") endpoint = "completions";
+    if (modelName === "ernie-speed-8k") endpoint = "ernie_speed";
+    return `rpc/2.0/ai_custom/v1/wenxinworkshop/chat/${endpoint}`;
+  },
 };
 
 export const ByteDance = {
