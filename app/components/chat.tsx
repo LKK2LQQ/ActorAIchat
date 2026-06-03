@@ -1900,6 +1900,19 @@ function _Chat() {
                                       : ""}
                                   </span>
                                 )}
+                                {(message.retryCount ?? 0) > 0 &&
+                                  message.streaming && (
+                                    <span
+                                      style={{
+                                        marginLeft: "8px",
+                                        fontSize: "11px",
+                                        color: "var(--warning-color, #f0ad4e)",
+                                      }}
+                                    >
+                                      Retrying... ({message.retryCount}/
+                                      {message.maxRetries ?? 3})
+                                    </span>
+                                  )}
                               </div>
                             )}
 

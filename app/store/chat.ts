@@ -530,6 +530,97 @@ export const useChatStore = createPersistStore(
           },
           onError(error) {
             const isAborted = error.message?.includes?.("aborted");
+            const retryCount = botMessage.retryCount ?? 0;
+            const maxRetries = botMessage.maxRetries ?? 3;
+            const isRecoverable =
+              !isAborted &&
+              !error.message?.includes?.("401") &&
+              !error.message?.includes?.("403");
+
+            if (isRecoverable && retryCount < maxRetries) {
+              // Auto-retry with exponential backoff
+              const base = 1000;
+              const maxDelay = 8000;
+              const delay = Math.min(base * Math.pow(2, retryCount), maxDelay);
+              const jitter = Math.round(delay * (0.75 + Math.random() * 0.5));
+
+              botMessage.retryCount = retryCount + 1;
+              botMessage.partialContent = botMessage.content;
+              ChatControllerPool.remove(
+                session.id,
+                botMessage.id ?? messageIndex,
+              );
+
+              get().updateTargetSession(session, (session) => {
+                session.messages = session.messages.concat();
+              });
+
+              setTimeout(() => {
+                const partial = botMessage.partialContent;
+                if (partial) {
+                  sendMessages.push({
+                    role: "assistant",
+                    content: partial,
+                  } as any);
+                }
+                api.llm.chat({
+                  messages: sendMessages,
+                  config: { ...modelConfig, stream: true },
+                  onUpdate(message) {
+                    botMessage.streaming = true;
+                    if (message) botMessage.content = message;
+                    get().updateTargetSession(session, (session) => {
+                      session.messages = session.messages.concat();
+                    });
+                  },
+                  onFinish(message, _res, usage) {
+                    botMessage.streaming = false;
+                    botMessage.retryCount = 0;
+                    if (message) {
+                      botMessage.content = message;
+                      botMessage.date = new Date().toLocaleString();
+                      if (usage) {
+                        botMessage.usage = {
+                          ...usage,
+                          cost: estimateCost(
+                            modelConfig.model,
+                            usage.promptTokens,
+                            usage.completionTokens,
+                          ),
+                        };
+                      }
+                      get().onNewMessage(botMessage, session);
+                    }
+                    ChatControllerPool.remove(
+                      session.id,
+                      botMessage.id ?? messageIndex,
+                    );
+                  },
+                  onError(err) {
+                    botMessage.streaming = false;
+                    botMessage.isError = true;
+                    get().updateTargetSession(session, (session) => {
+                      session.messages = session.messages.concat();
+                    });
+                    ChatControllerPool.remove(
+                      session.id,
+                      botMessage.id ?? messageIndex,
+                    );
+                  },
+                  onController(controller) {
+                    ChatControllerPool.addController(
+                      session.id,
+                      botMessage.id ?? messageIndex,
+                      controller,
+                    );
+                  },
+                });
+              }, jitter);
+
+              return;
+            }
+
+            // Fall through to existing error handling
             botMessage.content +=
               "\n\n" +
               prettyObject({
