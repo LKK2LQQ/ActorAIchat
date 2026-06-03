@@ -225,6 +225,7 @@ export function SideBarTail(props: {
 }
 
 export function SideBar(props: { className?: string }) {
+  const [searchText, setSearchText] = useState("");
   useHotKey();
   const { onDragStart, shouldNarrow } = useDragSideBar();
   const [showDiscoverySelector, setshowDiscoverySelector] = useState(false);
@@ -312,7 +313,26 @@ export function SideBar(props: { className?: string }) {
           }
         }}
       >
-        <ChatList narrow={shouldNarrow} />
+        {!shouldNarrow && (
+          <div className="sidebar-search">
+            <input
+              type="text"
+              className="sidebar-search-input"
+              placeholder="搜索对话 / 角色..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            {searchText && (
+              <span
+                className="sidebar-search-clear"
+                onClick={() => setSearchText("")}
+              >
+                ✕
+              </span>
+            )}
+          </div>
+        )}
+        <ChatList narrow={shouldNarrow} filterText={searchText} />
       </SideBarBody>
       <SideBarTail
         primaryAction={

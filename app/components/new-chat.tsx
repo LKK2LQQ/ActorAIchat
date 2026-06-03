@@ -15,7 +15,7 @@ import { useAppConfig, useChatStore } from "../store";
 import { MaskAvatar } from "./mask";
 import { useCommand } from "../command";
 import { showConfirm } from "./ui-lib";
-import { BUILTIN_MASK_STORE } from "../masks";
+import { BUILTIN_MASKS, BUILTIN_MASK_STORE } from "../masks";
 import clsx from "clsx";
 
 function MaskItem(props: { mask: Mask; onClick?: () => void }) {
@@ -46,15 +46,35 @@ function useMaskGroup(masks: Mask[]) {
       const maskItemWidth = 120;
       const maskItemHeight = 50;
 
-      let maskIndex = 0;
-      const nextMask = () => masks[maskIndex++ % masks.length];
-
       const rows = Math.ceil(maxHeight / maskItemHeight);
       const cols = Math.ceil(maxWidth / maskItemWidth);
 
-      const newGroups = new Array(rows)
-        .fill(0)
-        .map((_, _i) => new Array(cols).fill(0).map(() => nextMask()));
+      // Build positions sorted by distance from grid center (spiral outward)
+      const centerRow = (rows - 1) / 2;
+      const centerCol = (cols - 1) / 2;
+
+      type Position = { r: number; c: number; dist: number };
+      const positions: Position[] = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          positions.push({
+            r,
+            c,
+            dist: Math.sqrt((r - centerRow) ** 2 + (c - centerCol) ** 2),
+          });
+        }
+      }
+      positions.sort((a, b) => a.dist - b.dist);
+
+      // Fill grid center-first: most-used masks land closer to center
+      const newGroups: Mask[][] = Array.from(
+        { length: rows },
+        () => new Array(cols),
+      );
+      let maskIndex = 0;
+      for (const { r, c } of positions) {
+        newGroups[r][c] = masks[maskIndex++ % masks.length];
+      }
 
       setGroups(newGroups);
     };
@@ -80,18 +100,46 @@ export function NewChat() {
     return () => window.removeEventListener("agency-agents-loaded", handler);
   }, []);
 
-  const allMasks = maskStore.getAll();
+  // Subscribe to store state with selectors so references are stable
+  // (Zustand selectors use strict equality — only trigger re-render on actual change)
+  const storeMasks = useMaskStore((s) => s.masks);
+  const useCounts = useMaskStore((s) => s.useCounts);
+  const hideBuiltinMasks = useAppConfig((s) => s.hideBuiltinMasks);
+  const globalModelConfig = useAppConfig((s) => s.modelConfig);
 
-  // Filter masks by current UI language (cn → zh, en → en)
+  // Build allMasks from stable store subscriptions (not from getAll() which
+  // always returns a fresh array and causes infinite render loops)
+  const allMasks = useMemo(() => {
+    const userMasks = Object.values(storeMasks).sort(
+      (a, b) => b.createdAt - a.createdAt,
+    );
+    if (hideBuiltinMasks) return userMasks;
+    const buildinMasks = BUILTIN_MASKS.map(
+      (m) =>
+        ({
+          ...m,
+          modelConfig: {
+            ...globalModelConfig,
+            ...m.modelConfig,
+          },
+        }) as Mask,
+    );
+    return userMasks.concat(buildinMasks);
+  }, [storeMasks, hideBuiltinMasks, globalModelConfig, loaded]);
+
+  // Filter masks by current UI language and sort by usage count (heat map)
   const masks = useMemo(() => {
     const langKey = getLang() === "cn" ? "zh" : "en";
-    return allMasks.filter((m) => {
+    const filtered = allMasks.filter((m) => {
       const maskLang = (m as any).lang;
       if (!maskLang) return true; // user-created masks
       return maskLang === langKey;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allMasks, loaded]);
+    // Sort by useCount descending — most-used masks land at center of spiral
+    return [...filtered].sort(
+      (a, b) => (useCounts[b.name] || 0) - (useCounts[a.name] || 0),
+    );
+  }, [allMasks, useCounts]);
 
   const groups = useMaskGroup(masks);
 

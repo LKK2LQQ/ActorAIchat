@@ -72,6 +72,18 @@
           .mask-name {
             font-size: 14px;
             font-weight: bold;
+
+            .mask-star {
+              cursor: pointer;
+              margin-right: 4px;
+              font-size: 14px;
+              color: #f5a623;
+              user-select: none;
+
+              &:hover {
+                transform: scale(1.2);
+              }
+            }
           }
           .mask-info {
             font-size: 12px;

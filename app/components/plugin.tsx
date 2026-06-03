@@ -316,6 +316,21 @@ export function PluginPage() {
                   ></PasswordInput>
                 </ListItem>
               )}
+
+              <ListItem
+                title={Locale.Plugin.Proxy}
+                subTitle={Locale.Plugin.ProxyDescription}
+              >
+                <input
+                  type="checkbox"
+                  checked={editingPlugin?.proxy !== false}
+                  onChange={(e) => {
+                    pluginStore.updatePlugin(editingPlugin.id, (plugin) => {
+                      plugin.proxy = e.currentTarget.checked;
+                    });
+                  }}
+                />
+              </ListItem>
             </List>
             <List>
               <ListItem title={Locale.Plugin.EditModal.Content}>

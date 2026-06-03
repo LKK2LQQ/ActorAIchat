@@ -111,6 +111,7 @@ import {
 import { Avatar } from "./emoji";
 import { ContextPrompts, MaskAvatar, MaskConfig } from "./mask";
 import { useMaskStore } from "../store/mask";
+import { RoleSwitcher } from "./role-switcher";
 import { ChatCommandPrefix, useChatCommand, useCommand } from "../command";
 import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
@@ -403,7 +404,7 @@ function ClearContextDivider() {
 
 export function ChatAction(props: {
   text: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   onClick: () => void;
 }) {
   const iconRef = useRef<HTMLDivElement>(null);
@@ -657,6 +658,8 @@ export function ChatActions(props: {
           text={Locale.Chat.InputActions.Masks}
           icon={<MaskIcon />}
         />
+
+        <RoleSwitcher renderAction={(props) => <ChatAction {...props} />} />
 
         <ChatAction
           text={Locale.Chat.InputActions.Clear}
@@ -1037,6 +1040,7 @@ function _Chat() {
   // prompt hints
   const promptStore = usePromptStore();
   const [promptHints, setPromptHints] = useState<RenderPrompt[]>([]);
+  const [showContextPanel, setShowContextPanel] = useState(false);
   const onSearch = useDebouncedCallback(
     (text: string) => {
       const matchedPrompts = promptStore.search(text);
@@ -1331,8 +1335,9 @@ function _Chat() {
   }
 
   const context: RenderMessage[] = useMemo(() => {
+    if (showContextPanel) return session.mask.context.slice();
     return session.mask.hideContext ? [] : session.mask.context.slice();
-  }, [session.mask.context, session.mask.hideContext]);
+  }, [session.mask.context, session.mask.hideContext, showContextPanel]);
 
   if (
     context.length === 0 &&

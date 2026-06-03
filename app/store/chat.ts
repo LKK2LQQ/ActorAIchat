@@ -35,7 +35,7 @@ import { estimateTokenLength } from "../utils/token";
 import { ModelConfig, ModelType, useAppConfig } from "./config";
 import { useAccessStore } from "./access";
 import { collectModelsWithDefaultModel } from "../utils/model";
-import { createEmptyMask, Mask } from "./mask";
+import { createEmptyMask, Mask, useMaskStore } from "./mask";
 import { executeMcpAction, getAllTools, isMcpEnabled } from "../mcp/actions";
 import { extractMcpJson, isMcpJson } from "../mcp/utils";
 
@@ -319,6 +319,9 @@ export const useChatStore = createPersistStore(
             },
           };
           session.topic = mask.name;
+
+          // Record usage for heat map
+          useMaskStore.getState().recordUse(mask.name);
         }
 
         set((state) => ({

@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useChatStore } from "../store";
+import { useChatStore, useMaskStore } from "../store";
 import { getAgencyAgents, DEFAULT_SKILL } from "../skills";
 import { BuiltinMask } from "../masks/typing";
 import MaskIcon from "../icons/mask.svg";
@@ -32,6 +32,7 @@ interface GroupedItems {
 
 export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
   const chatStore = useChatStore();
+  const maskStore = useMaskStore();
   const session = chatStore.currentSession();
   const currentRoleName = session.mask.name;
 
@@ -78,10 +79,11 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
 
   const groupedItems: GroupedItems[] = useMemo(() => {
     const groupMap = new Map<string, BuiltinMask[]>();
-    for (const { skill, categoryLabel } of filteredSkills) {
-      const existing = groupMap.get(categoryLabel) || [];
-      existing.push(skill);
-      groupMap.set(categoryLabel, existing);
+
+    for (const item of filteredSkills) {
+      const existing = groupMap.get(item.categoryLabel) || [];
+      existing.push(item.skill);
+      groupMap.set(item.categoryLabel, existing);
     }
 
     return Array.from(groupMap.entries())
@@ -103,6 +105,7 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
   }, [filteredSkills]);
 
   function applySkill(skill: BuiltinMask) {
+    maskStore.recordUse(skill.name);
     chatStore.updateTargetSession(session, (s) => {
       s.mask.name = skill.name;
       s.mask.avatar = skill.avatar;

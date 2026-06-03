@@ -37,7 +37,7 @@ import Locale, { AllLangs, ALL_LANG_OPTIONS, Lang } from "../locales";
 import { useNavigate } from "react-router-dom";
 
 import chatStyle from "./chat.module.scss";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   copyToClipboard,
   downloadAs,
@@ -467,6 +467,16 @@ export function MaskPage() {
   const [searchText, setSearchText] = useState("");
   const masks = searchText.length > 0 ? searchMasks : allMasks;
 
+  // Sort favorited masks first, then by createdAt descending
+  const displayMasks = useMemo(() => {
+    return [...masks].sort((a, b) => {
+      const aFav = maskStore.isFavorited(a.name) ? 0 : 1;
+      const bFav = maskStore.isFavorited(b.name) ? 0 : 1;
+      if (aFav !== bFav) return aFav - bFav;
+      return b.createdAt - a.createdAt;
+    });
+  }, [masks]);
+
   // refactored already, now it accurate
   const onSearch = (text: string) => {
     setSearchText(text);
@@ -593,14 +603,30 @@ export function MaskPage() {
           </div>
 
           <div>
-            {masks.map((m) => (
+            {displayMasks.map((m) => (
               <div className={styles["mask-item"]} key={m.id}>
                 <div className={styles["mask-header"]}>
                   <div className={styles["mask-icon"]}>
                     <MaskAvatar avatar={m.avatar} model={m.modelConfig.model} />
                   </div>
                   <div className={styles["mask-title"]}>
-                    <div className={styles["mask-name"]}>{m.name}</div>
+                    <div className={styles["mask-name"]}>
+                      <span
+                        className={styles["mask-star"]}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          maskStore.toggleFavorite(m.name);
+                        }}
+                        title={
+                          maskStore.isFavorited(m.name)
+                            ? "取消收藏"
+                            : "收藏面具"
+                        }
+                      >
+                        {maskStore.isFavorited(m.name) ? "★" : "☆"}
+                      </span>
+                      {m.name}
+                    </div>
                     <div className={clsx(styles["mask-info"], "one-line")}>
                       {`${Locale.Mask.Item.Info(m.context.length)} / ${
                         ALL_LANG_OPTIONS[m.lang as "cn" | "en"] ?? m.lang

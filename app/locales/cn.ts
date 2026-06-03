@@ -685,6 +685,8 @@ const cn = {
       Delete: "删除",
       DeleteConfirm: "确认删除？",
     },
+    Proxy: "使用代理",
+    ProxyDescription: "通过代理访问插件 API，解决 CORS 问题",
     Auth: {
       None: "不需要授权",
       Basic: "Basic",
@@ -692,8 +694,6 @@ const cn = {
       Custom: "自定义",
       CustomHeader: "自定义参数名称",
       Token: "Token",
-      Proxy: "使用代理",
-      ProxyDescription: "使用代理解决 CORS 错误",
       Location: "位置",
       LocationHeader: "Header",
       LocationQuery: "Query",

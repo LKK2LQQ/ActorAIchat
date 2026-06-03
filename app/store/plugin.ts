@@ -20,6 +20,7 @@ export type Plugin = {
   authLocation?: string;
   authHeader?: string;
   authToken?: string;
+  proxy?: boolean;
 };
 
 export type FunctionToolItem = {
@@ -54,9 +55,12 @@ export const FunctionToolService = {
     const authLocation = plugin?.authLocation || "header";
     const definition = yaml.load(plugin.content) as any;
     const serverURL = definition?.servers?.[0]?.url;
-    const baseURL = !isApp ? "/api/proxy" : serverURL;
+    // Use proxy only when plugin's proxy setting is enabled (default: true)
+    // and we're not in the native app (Tauri)
+    const useProxy = plugin.proxy !== false && !isApp;
+    const baseURL = useProxy ? "/api/proxy" : serverURL;
     const headers: Record<string, string | undefined> = {
-      "X-Base-URL": !isApp ? serverURL : undefined,
+      "X-Base-URL": useProxy ? serverURL : undefined,
     };
     if (authLocation == "header") {
       headers[headerName] = tokenValue;
@@ -162,6 +166,7 @@ export const createEmptyPlugin = () =>
     version: "1.0.0",
     content: "",
     builtin: false,
+    proxy: true,
     createdAt: Date.now(),
   }) as Plugin;
 
