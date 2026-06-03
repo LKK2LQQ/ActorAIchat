@@ -39,6 +39,16 @@ const nextConfig = {
       child_process: false,
     };
 
+    // Mark undici as external — it contains private field syntax (#field)
+    // that webpack cannot parse. Used only in server-side proxy route.
+    if (Array.isArray(config.externals)) {
+      config.externals.push("undici");
+    } else if (config.externals) {
+      config.externals = [config.externals, "undici"];
+    } else {
+      config.externals = ["undici"];
+    }
+
     return config;
   },
   output: mode,

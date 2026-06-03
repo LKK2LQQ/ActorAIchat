@@ -27,6 +27,7 @@ export type Mask = {
 export const DEFAULT_MASK_STATE = {
   masks: {} as Record<string, Mask>,
   favoritedIds: [] as string[],
+  useCounts: {} as Record<string, number>,
   language: undefined as Lang | undefined,
 };
 
@@ -123,6 +124,15 @@ export const useMaskStore = createPersistStore(
     isFavorited(id: string) {
       return get().favoritedIds.includes(id);
     },
+    recordUse(name: string) {
+      const useCounts = { ...get().useCounts };
+      useCounts[name] = (useCounts[name] || 0) + 1;
+      set(() => ({ useCounts }));
+      get().markUpdate();
+    },
+    getUseCount(name: string) {
+      return get().useCounts[name] || 0;
+    },
     setLanguage(language: Lang | undefined) {
       set({
         language,
@@ -131,7 +141,7 @@ export const useMaskStore = createPersistStore(
   }),
   {
     name: StoreKey.Mask,
-    version: 3.1,
+    version: 3.2,
 
     migrate(state, version) {
       const newState = JSON.parse(JSON.stringify(state)) as MaskState;

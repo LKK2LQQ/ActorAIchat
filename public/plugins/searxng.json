@@ -6,12 +6,12 @@
   },
   "servers": [
     {
-      "url": "https://searx.be",
+      "url": "https://searxng.website",
       "description": "SearXNG instance URL."
     }
   ],
   "paths": {
-    "/search": {
+    "/searxng/search": {
       "get": {
         "summary": "Perform a search query (GET)",
         "operationId": "SearXNGSearch",

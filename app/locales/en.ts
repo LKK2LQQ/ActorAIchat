@@ -694,6 +694,8 @@ const en: LocaleType = {
       Delete: "Delete",
       DeleteConfirm: "Confirm to delete?",
     },
+    Proxy: "Use Proxy",
+    ProxyDescription: "Proxy plugin API calls to avoid CORS issues",
     Auth: {
       None: "None",
       Basic: "Basic",
@@ -701,8 +703,6 @@ const en: LocaleType = {
       Custom: "Custom",
       CustomHeader: "Parameter Name",
       Token: "Token",
-      Proxy: "Using Proxy",
-      ProxyDescription: "Using proxies to solve CORS error",
       Location: "Location",
       LocationHeader: "Header",
       LocationQuery: "Query",

@@ -14,6 +14,9 @@ const config: Config = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
+    "^.+\\.svg$": "<rootDir>/test/__mocks__/svg.tsx",
+    "^openapi-client-axios$":
+      "<rootDir>/test/__mocks__/openapi-client-axios.ts",
   },
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   injectGlobals: true,

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSideConfig } from "@/app/config/server";
 
+declare const __non_webpack_require__: NodeRequire | undefined;
+
 export async function handle(
   req: NextRequest,
   { params }: { params: { path: string[] } },
@@ -32,6 +34,17 @@ export async function handle(
     }),
   );
 
+  // Ensure requests don't look like bots — SearXNG limiter checks these
+  if (!headers.get("user-agent")) {
+    headers.set("user-agent", "ActorAIchat/1.0");
+  }
+  if (!headers.get("accept")) {
+    headers.set("accept", "application/json, text/html");
+  }
+  if (!headers.get("accept-language")) {
+    headers.set("accept-language", "en-US,en;q=0.9");
+  }
+
   if (baseUrl.includes("api.openai.com")) {
     if (!serverConfig.apiKey) {
       return NextResponse.json(
@@ -53,10 +66,26 @@ export async function handle(
     signal: controller.signal,
   };
 
+  // Use local HTTP proxy when configured (e.g. Clash/V2Ray VPN).
+  // Node.js global fetch does not accept undici's dispatcher — we must use
+  // undici's own fetch() which supports ProxyAgent natively.
+  let doFetch: typeof fetch = fetch;
+  if (serverConfig.proxyUrl) {
+    const _require =
+      typeof __non_webpack_require__ !== "undefined"
+        ? __non_webpack_require__
+        : require;
+    const undici = _require("undici");
+    (fetchOptions as any).dispatcher = new undici.ProxyAgent(
+      serverConfig.proxyUrl,
+    );
+    doFetch = undici.fetch;
+  }
+
   const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000);
 
   try {
-    const res = await fetch(fetchUrl, fetchOptions);
+    const res = await doFetch(fetchUrl, fetchOptions);
     const newHeaders = new Headers(res.headers);
     newHeaders.delete("www-authenticate");
     newHeaders.set("X-Accel-Buffering", "no");

@@ -79,38 +79,14 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
 
   const groupedItems: GroupedItems[] = useMemo(() => {
     const groupMap = new Map<string, BuiltinMask[]>();
-    const favorited: BuiltinMask[] = [];
 
     for (const item of filteredSkills) {
-      if (maskStore.isFavorited(item.skill.name)) {
-        favorited.push(item.skill);
-      } else {
-        const existing = groupMap.get(item.categoryLabel) || [];
-        existing.push(item.skill);
-        groupMap.set(item.categoryLabel, existing);
-      }
+      const existing = groupMap.get(item.categoryLabel) || [];
+      existing.push(item.skill);
+      groupMap.set(item.categoryLabel, existing);
     }
 
-    const result: GroupedItems[] = [];
-
-    if (favorited.length > 0) {
-      result.push({
-        category: "⭐ 收藏",
-        items: favorited.map((skill) => ({
-          title: skill.name,
-          subTitle:
-            (skill as any).description ||
-            extractFirstLine(
-              typeof skill.context[0]?.content === "string"
-                ? skill.context[0].content
-                : "",
-            ),
-          value: skill.name,
-        })),
-      });
-    }
-
-    const categoryGroups = Array.from(groupMap.entries())
+    return Array.from(groupMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([categoryLabel, skills]) => ({
         category: categoryLabel,
@@ -126,11 +102,10 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
           value: skill.name,
         })),
       }));
-
-    return result.concat(categoryGroups);
-  }, [filteredSkills, JSON.stringify(maskStore.favoritedIds)]);
+  }, [filteredSkills]);
 
   function applySkill(skill: BuiltinMask) {
+    maskStore.recordUse(skill.name);
     chatStore.updateTargetSession(session, (s) => {
       s.mask.name = skill.name;
       s.mask.avatar = skill.avatar;
@@ -208,24 +183,6 @@ export function RoleSwitcher({ renderAction }: RoleSwitcherProps) {
                       }}
                     >
                       <div className={styles["role-item-name"]}>
-                        <span
-                          className={styles["star-btn"]}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const found = allSkills.find(
-                              (s) => s.skill.name === item.value,
-                            );
-                            if (found)
-                              maskStore.toggleFavorite(found.skill.name);
-                          }}
-                          title={
-                            maskStore.isFavorited(item.value)
-                              ? "取消收藏"
-                              : "收藏角色"
-                          }
-                        >
-                          {maskStore.isFavorited(item.value) ? "★" : "☆"}
-                        </span>
                         {item.title}
                       </div>
                       {item.subTitle && (
